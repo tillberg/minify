@@ -206,21 +206,10 @@ func Minify(m minify.Minifier, _ string, w io.Writer, r io.Reader) error {
 			if hasAttributes {
 				// rewrite attributes with interdependent conditions
 				if t.Hash == html.A {
-					if attr := getAttributes(tb, &attrIntBuffer, &attrTokenBuffer, html.Id, html.Name, html.Rel, html.Href); attr != nil {
+					if attr := getAttributes(tb, &attrIntBuffer, &attrTokenBuffer, html.Id, html.Name); attr != nil {
 						if id := attr[0]; id != nil {
 							if name := attr[1]; name != nil && parse.Equal(id.AttrVal, name.AttrVal) {
 								name.Data = nil
-							}
-						}
-						if rel := attr[2]; rel == nil || !parse.EqualFold(rel.AttrVal, externalBytes) {
-							if href := attr[3]; href != nil {
-								if len(href.AttrVal) > 5 && parse.EqualFold(href.AttrVal[:4], []byte{'h', 't', 't', 'p'}) {
-									if href.AttrVal[4] == ':' {
-										href.AttrVal = href.AttrVal[5:]
-									} else if (href.AttrVal[4] == 's' || href.AttrVal[4] == 'S') && href.AttrVal[5] == ':' {
-										href.AttrVal = href.AttrVal[6:]
-									}
-								}
 							}
 						}
 					}
