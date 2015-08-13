@@ -29,7 +29,6 @@ const maxAttrLookup = 4
 func Minify(m minify.Minifier, _ string, w io.Writer, r io.Reader) error {
 	var rawTag html.Hash
 	var rawTagMediatype []byte
-	precededBySpace := true // on true the next text token must not start with a space
 	defaultScriptType := "text/javascript"
 	defaultStyleType := "text/css"
 	defaultInlineStyleType := "text/css;inline=1"
@@ -97,17 +96,8 @@ func Minify(m minify.Minifier, _ string, w io.Writer, r io.Reader) error {
 					return err
 				}
 			} else if t.Data = parse.ReplaceMultiple(t.Data, parse.IsWhitespace, ' '); len(t.Data) > 0 {
-				// whitespace removal; trim left
-				if precededBySpace && t.Data[0] == ' ' {
-					t.Data = t.Data[1:]
-				}
-
 				// whitespace removal; trim right
-				precededBySpace = false
-				if len(t.Data) == 0 {
-					precededBySpace = true
-				} else if t.Data[len(t.Data)-1] == ' ' {
-					precededBySpace = true
+				if len(t.Data) > 0 && t.Data[len(t.Data)-1] == ' ' {
 					trim := false
 					i := 0
 					for {
@@ -132,7 +122,6 @@ func Minify(m minify.Minifier, _ string, w io.Writer, r io.Reader) error {
 					}
 					if trim {
 						t.Data = t.Data[:len(t.Data)-1]
-						precededBySpace = false
 					}
 				}
 				if _, err := w.Write(t.Data); err != nil {
@@ -149,7 +138,6 @@ func Minify(m minify.Minifier, _ string, w io.Writer, r io.Reader) error {
 			}
 
 			if !inlineTagMap[t.Hash] {
-				precededBySpace = true
 				if t.TokenType == html.StartTagToken && rawTagMap[t.Hash] {
 					// ignore empty script and style tags
 					if !hasAttributes && (t.Hash == html.Script || t.Hash == html.Style) {
